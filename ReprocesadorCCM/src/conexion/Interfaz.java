@@ -8,7 +8,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import weblogic.net.http.HttpURLConnection;
 
@@ -17,11 +16,13 @@ public class Interfaz {
 
 	private Gson gson;
 	private String endpoint;
+	private RegistraLog registraLog;
 
 	public Interfaz() {
 		//gson = new GsonBuilder().setPrettyPrinting().create();
 		gson = new Gson();
-		endpoint = "http://localhost:7001/ReprocesadorCCM/resources/Servicio";
+		endpoint = "http://localhost:7001/ReprocesadorCCM/resources/Servicio/customer";
+		registraLog = RegistraLog.getLog();
 	}
 
 	public Object post(Object object) {
@@ -37,13 +38,17 @@ public class Interfaz {
 			OutputStream os = conn.getOutputStream();
 			os.write(json.getBytes());
 			os.flush();
+			registraLog.log("request: " + json);
 			if (conn.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
 				//throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
-				System.out.println("Failed : HTTP error code : " + conn.getResponseCode());
+				//System.out.println("Failed : HTTP error code : " + conn.getResponseCode());
+				registraLog.log("No se ha podido crear el usuario");
 			}
+			registraLog.log("response code: " + conn.getResponseCode());
+			
 			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 			while ((output = br.readLine()) != null) {
-				System.out.println(output);
+				registraLog.log("response body: " + output);
 			}
 			conn.disconnect();
 		} catch (MalformedURLException e) {
@@ -65,7 +70,8 @@ public class Interfaz {
 			conn.setRequestProperty("Accept", "application/json");
 
 			if (conn.getResponseCode() != 200) {
-				throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
+				registraLog.log("No se ha podido obtener la informacion");
+				//throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
 			}
 			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 			while ((output = br.readLine()) != null) {
@@ -94,12 +100,15 @@ public class Interfaz {
 			OutputStream os = conn.getOutputStream();
 			os.write(json.getBytes());
 			os.flush();
+			registraLog.log("request: " + json);
 			if (conn.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
-				throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
+				//throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
+				registraLog.log("No se ha podido obtener la informacion");
 			}
+			registraLog.log("response code: " + conn.getResponseCode());
 			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 			while ((output = br.readLine()) != null) {
-				System.out.println(output);
+				registraLog.log("response body: " + output);
 			}
 			conn.disconnect();
 		} catch (MalformedURLException e) {

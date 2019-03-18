@@ -11,6 +11,8 @@ import javax.ws.rs.Produces;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import conexion.ParametrosRequest;
+import conexion.RegistraLog;
 import controlador.Reprocesador;
 import persistencia.DatosPersona;
 
@@ -32,12 +34,46 @@ public class Servicio {
 	 * @return an instance of String
 	 */
 	@GET
-	@Produces("text/plain")
+	@Consumes("application/json")
+	@Produces("application/json")
 	public String resourceMethodGET() {
-		String respuesta = "";
-		reprocesador.reprocesarHistoricoMensaje();
-		System.out.println(respuesta);
 		return "health";
+	}
+	
+	/**
+	 * Retrieves representation of an instance of Servicio
+	 * 
+	 * @return an instance of String
+	 */
+	@POST
+	@Path("sincronizar")
+	@Consumes("application/json")
+	@Produces("application/json")
+	public String resourceMethodGET(ParametrosRequest parametrosRequest) {
+		String respuesta = "";
+		reprocesador.reprocesarHistoricoMensaje(parametrosRequest.getRespuestaServicio(), parametrosRequest.getCanal());
+		respuesta = "Proceso de sincronizacion iniciado correctamente";
+		RegistraLog.getLog().log(respuesta);
+		return respuesta;
+	}
+	
+
+	/**
+	 * Retrieves representation of an instance of Servicio
+	 * 
+	 * @return an instance of String
+	 */
+	@PUT
+	@Path("customer")
+	@Consumes("application/json")
+	@Produces("application/json")
+	public String customerUpdate(DatosPersona datosPersona) {
+		String respuesta = "";
+		GsonBuilder gson = new GsonBuilder().setPrettyPrinting();
+		if (datosPersona != null) {
+			respuesta = gson.create().toJson(datosPersona);
+		}
+		return "MySQL actualiza: " + respuesta;
 	}
 
 	/**
@@ -46,14 +82,16 @@ public class Servicio {
 	 * @return an instance of String
 	 */
 	@POST
-	@Produces("text/plain")
-	public String customer(DatosPersona datosPersona) {
+	@Path("customer")
+	@Consumes("application/json")
+	@Produces("application/json")
+	public String customerInsert(DatosPersona datosPersona) {
 		String respuesta = "";
 		GsonBuilder gson = new GsonBuilder().setPrettyPrinting();
 		if (datosPersona != null) {
 			respuesta = gson.create().toJson(datosPersona);
 		}
-		return "Servicio recibe: " + respuesta;
+		return "MySQL inserta: " + respuesta;
 	}
 
 	/**

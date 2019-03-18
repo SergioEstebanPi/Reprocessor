@@ -36,7 +36,7 @@ public class HistoricoMensajeDao {
 				+ "M.USUARIO_CREACION, "
 				+ "M.FECHA_CREACION, "
 				+ "M.USUARIO_ULTIMA_MODIFICACION, "
-				+ "M.FECHA_ULTIMA_MODIFICACION, "
+				+ "M.FECHA_ULTIMA_MODIFICACION "
 				+ "FROM CCM_MENSAJE M "
 				+ "INNER JOIN CCM_HISTORICO_MENSAJE H "
 				+ "ON M.MENSAJE_ID = H.MENSAJE_PK "
@@ -69,7 +69,7 @@ public class HistoricoMensajeDao {
 		return mensajes;
 	}
 	
-	public int actualizarHistorico(HistoricoMensaje historicoMensaje) {
+	public int actualizarHistorico(String nroIdentificacion) {
 		int actualizados = 0;
 	    Connection connection = conectorDB.getConnection();
 		String sql = "UPDATE CCM_HISTORICO_MENSAJE H "
@@ -78,7 +78,7 @@ public class HistoricoMensajeDao {
 				+ "( "
 				+ "SELECT M.MENSAJE_ID "
 				+ "FROM CCM_MENSAJE M "
-				+ "WHERE M.NRO_IDENTIFICACION = '" + 1234 + "' "
+				+ "WHERE M.NRO_IDENTIFICACION = '" + nroIdentificacion + "' "
 				+ "AND M.CANAL = '" + "CCM" + "' "
 				+ "AND H.RESPUESTA_SERVICIO <> '" + C_INSERTADO + "' "
 				+ "AND M.ESTADO_MENSAJE <> '" + C_REPROCESADO + "' "

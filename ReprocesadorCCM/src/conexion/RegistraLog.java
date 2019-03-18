@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class RegistraLog {
+	private static RegistraLog registraLog;
 	private String carpeta;
 	private String nombre;
 
@@ -17,6 +18,13 @@ public class RegistraLog {
 		File homedir = new File(System.getProperty("user.home"));
 		carpeta = homedir + fileSeparator + "CCM" + fileSeparator;
 		nombre = "log" + "_" + fecha() + ".txt";
+	}
+	
+	public static RegistraLog getLog() {
+		if(registraLog == null) {
+			registraLog = new RegistraLog();
+		}
+		return registraLog;
 	}
 
 	public RegistraLog(String carpeta, String nombre) {

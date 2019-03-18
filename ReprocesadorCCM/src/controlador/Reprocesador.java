@@ -22,7 +22,6 @@ public class Reprocesador {
 	private static final String C_DBPORVE = "DBPORVE";
 	private static final String C_I = "I";
 	private static final String C_U = "U";
-	private static final String C_FALLIDO = "{error}";
 	
 	private RegistraLog registraLog;
 	
@@ -30,13 +29,14 @@ public class Reprocesador {
 		historicosFallidos = new ArrayList<Mensaje>();
 		historicoMensajeDao = new HistoricoMensajeDao(C_DBPORVE);
 		datosPersonaDao = new DatosPersonaDao();
-		registraLog = new RegistraLog();
+		registraLog = RegistraLog.getLog();
 	}
 
-	public void reprocesarHistoricoMensaje() {
+	public void reprocesarHistoricoMensaje(String respuestaServicio, String canal) {
 		registraLog.log("Inicio lectura de mensajes fallidos");
-		//historicosFallidos = historicoMensajeDao.getFallidos(C_FALLIDO, C_CRM);
+		historicosFallidos = historicoMensajeDao.getFallidos(respuestaServicio, canal);
 
+		/*
 		for (int i = 0; i < 1; i++) {
 			Mensaje mensaje = new Mensaje();
 			mensaje.setMensajeId("" + i);
@@ -60,7 +60,9 @@ public class Reprocesador {
 			mensaje.setCanal("CRM");
 			historicosFallidos.add(mensaje);
 		}
+		*/
 
+		registraLog.log("Inicia eliminacion de nroidentificacion repetidos");
 		/* elimina los nroidentificacion repetidos */
 		HashSet<Mensaje> actualizables = new HashSet<Mensaje>();
 		for (Mensaje mensaje : historicosFallidos) {
@@ -85,22 +87,23 @@ public class Reprocesador {
 				
 				/* actualizar historico si todo OK */
 				if (true) {
-					HistoricoMensaje historicoMensaje = new HistoricoMensaje();
-					historicoMensajeDao.actualizarHistorico(historicoMensaje);
+					//HistoricoMensaje historicoMensaje = new HistoricoMensaje();
+					historicoMensajeDao.actualizarHistorico(mensaje.getNroIdentidad());
+					registraLog.log("[ACTUALIZADO] -> " + mensaje.getMensajeId());
 				}
 			}
 		}
-		/* registra en el historico */
-
-		System.out.println("Fin reprocesar mensajes");
+		registraLog.log("Fin proceso");
 	}
 
 	public DatosPersona getDatosCliente(Mensaje mensaje) {
 		DatosPersona datosPersona = new DatosPersona();
 		if (C_CRM.equals(mensaje.getCanal())) {
+			registraLog.log("Conexion a CRM");
 			datosPersona = getInfoCRM(mensaje.getNroIdentidad());
 			datosPersona.setOrigenDatos(C_CRM);
 		} else if (C_DBPORVE.equals(mensaje.getCanal())) {
+			registraLog.log("Conexion a DBPORVE");
 			datosPersona = getInfoDBPorve(mensaje.getNroIdentidad());
 			datosPersona.setOrigenDatos(C_DBPORVE);
 		}
