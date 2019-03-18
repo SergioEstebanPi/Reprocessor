@@ -21,19 +21,22 @@ public class HistoricoMensajeDao {
 	}
 	
 	public HistoricoMensajeDao(String baseDatos) {
-		conectorDB = new ConectorDB("DBPORVE");
+		conectorDB = new ConectorDB(baseDatos);
 	}
 	
 	public List<Mensaje> getFallidos(String respuestaServicio, String canal) {
 		List<Mensaje> mensajes = new ArrayList<Mensaje>();
 		Connection connection = conectorDB.getConnection();
-		String sql = "SELECT H.HISTORICO_MENSAJE_ID, "
-				+ "H.MENSAJE_PK, "
-				+ "H.ESTADO_MENSAJE, "
-				+ "H.RESPUESTA_SERVICIO, "
+		String sql = "SELECT M.MENSAJE_ID, "
+				+ "M.ESTADO_MENSAJE, "
 				+ "M.NRO_IDENTIFICACION, "
 				+ "M.ESTADO_MENSAJE, "
-				+ "M.EVENTO "
+				+ "M.EVENTO, "
+				+ "M.CANAL, "
+				+ "M.USUARIO_CREACION, "
+				+ "M.FECHA_CREACION, "
+				+ "M.USUARIO_ULTIMA_MODIFICACION, "
+				+ "M.FECHA_ULTIMA_MODIFICACION, "
 				+ "FROM CCM_MENSAJE M "
 				+ "INNER JOIN CCM_HISTORICO_MENSAJE H "
 				+ "ON M.MENSAJE_ID = H.MENSAJE_PK "
@@ -46,19 +49,24 @@ public class HistoricoMensajeDao {
 			ResultSet resultSet = preparedStatement.executeQuery();
 			while (resultSet.next()) {
 				Mensaje mensaje = new Mensaje();
+				mensaje.setMensajeId(resultSet.getString("MENSAJE_ID"));
+				mensaje.setEstadoMensaje(resultSet.getString("ESTADO_MENSAJE"));
 				mensaje.setNroIdentidad(resultSet.getString("NRO_IDENTIFICACION"));
 				mensaje.setEvento(resultSet.getString("EVENTO"));
+				mensaje.setCanal(resultSet.getString("CANAL"));
+				mensaje.setUsuarioCreacion(resultSet.getString("USUARIO_CREACION"));
+				mensaje.setFechaCreacion(resultSet.getString("FECHA_CREACION"));
+				mensaje.setUsuarioCreacion(resultSet.getString("USUARIO_ULTIMA_MODIFICACION"));
+				mensaje.setFechaCreacion(resultSet.getString("FECHA_ULTIMA_MODIFICACION"));
 				mensajes.add(mensaje);
 			}
+			resultSet.close();
+			preparedStatement.close();
+			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return mensajes;
-	}
-	
-	public void insertarHistorico(HistoricoMensaje historicoMensaje) {
-		String sql = "";
-		
 	}
 	
 	public int actualizarHistorico(HistoricoMensaje historicoMensaje) {
@@ -79,10 +87,16 @@ public class HistoricoMensajeDao {
 		try {
 			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			actualizados = preparedStatement.executeUpdate();
+			preparedStatement.close();
+			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return actualizados;
+	}
+	
+	public void getHistoricosPorId() {
+		
 	}
 
 }

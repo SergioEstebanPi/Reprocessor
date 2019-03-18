@@ -1,15 +1,10 @@
 package controlador;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import com.google.gson.Gson;
-import com.rsa.cryptoj.c.da;
-import com.rsa.cryptoj.c.me;
-
-import conexion.Interfaz;
+import conexion.RegistraLog;
 import dao.DatosPersonaDao;
 import dao.HistoricoMensajeDao;
 import persistencia.Contacto;
@@ -22,23 +17,24 @@ public class Reprocesador {
 	private List<Mensaje> historicosFallidos;
 	private HistoricoMensajeDao historicoMensajeDao;
 	private DatosPersonaDao datosPersonaDao;
-	private Interfaz interfaz;
 
 	private static final String C_CRM = "CRM";
 	private static final String C_DBPORVE = "DBPORVE";
 	private static final String C_I = "I";
 	private static final String C_U = "U";
-	private static final String C_FALLIDO = "{}";
-
+	private static final String C_FALLIDO = "{error}";
+	
+	private RegistraLog registraLog;
+	
 	public Reprocesador() {
 		historicosFallidos = new ArrayList<Mensaje>();
-		historicoMensajeDao = new HistoricoMensajeDao();
+		historicoMensajeDao = new HistoricoMensajeDao(C_DBPORVE);
 		datosPersonaDao = new DatosPersonaDao();
-		interfaz = new Interfaz();
+		registraLog = new RegistraLog();
 	}
 
 	public void reprocesarHistoricoMensaje() {
-		System.out.println("Leer historicos");
+		registraLog.log("Inicio lectura de mensajes fallidos");
 		//historicosFallidos = historicoMensajeDao.getFallidos(C_FALLIDO, C_CRM);
 
 		for (int i = 0; i < 1; i++) {
@@ -51,7 +47,6 @@ public class Reprocesador {
 			mensaje.setNroIdentidad("1234567" + i);
 			mensaje.setCanal("CRM");
 			historicosFallidos.add(mensaje);
-			System.out.println(mensaje.getNroIdentidad() + ";" + mensaje.getEvento());
 		}
 		
 		for (int i = 0; i < 0; i++) {
@@ -64,7 +59,6 @@ public class Reprocesador {
 			mensaje.setNroIdentidad("1234567" + i);
 			mensaje.setCanal("CRM");
 			historicosFallidos.add(mensaje);
-			System.out.println(mensaje.getNroIdentidad() + ";" + mensaje.getEvento());
 		}
 
 		/* elimina los nroidentificacion repetidos */
@@ -77,7 +71,7 @@ public class Reprocesador {
 		/* preparcion de envio de mensajes actualizables */
 		DatosPersona datosPersona = new DatosPersona();
 		for (Mensaje mensaje : actualizables) {
-
+			registraLog.log("[ENCOLA] -> " + mensaje.getNroIdentidad() + ";" + mensaje.getEvento());
 			/* se obtiene la informacion de las base de datos */
 			datosPersona = getDatosCliente(mensaje);
 			if (datosPersona.getId() != null) {
@@ -86,13 +80,13 @@ public class Reprocesador {
 					datosPersonaDao.insertarDatosPersona(datosPersona);
 				} else if (C_U.equals(mensaje.getEvento())) {
 					/* se envia a la nube MySQL */
-					//datosPersonaDao.actualizarDatosPersona(datosPersonaDao);
+					datosPersonaDao.actualizarDatosPersona(datosPersonaDao);
 				}
 				
 				/* actualizar historico si todo OK */
 				if (true) {
 					HistoricoMensaje historicoMensaje = new HistoricoMensaje();
-					//historicoMensajeDao.actualizarHistorico(historicoMensaje);
+					historicoMensajeDao.actualizarHistorico(historicoMensaje);
 				}
 			}
 		}

@@ -1,5 +1,6 @@
 package test;
 
+import conexion.RegistraLog;
 import controlador.Reprocesador;
 
 public class Test {
